@@ -198,132 +198,47 @@
                 | OBJECTID  { @$ = @1; $$ = object($1); }
     ;
 
-    block_expressions : 
-                      block_expression 
-                      {
-                        @$ = @1;
-                        $$ = single_Expressions($1);
-                      }
-                      | block_expressions block_expression 
-                      {
-                        @$ = @2;
-                        $$ = append_Expressions($1,single_Expressions($2));
-                      }
+    block_expressions : block_expression  { @$ = @1; $$ = single_Expressions($1); }
+                      | block_expressions block_expression  { @$ = @2; $$ = append_Expressions($1,single_Expressions($2)); }
                       | error ';' { yyerrok; }
     ;
 
-    block_expression  : 
-                      expression ';' 
-                      {
-                        $$ = $1;
-                      }
+    block_expression  : expression ';' { $$ = $1; }
     ;
 
-    branches  : 
-              branch 
-              {
-                @$ = @1;
-                $$ = single_Cases($1);
-              }
-              | branches branch 
-              {
-                @$ = @2;
-                $$ = append_Cases($1, single_Cases($2));
-              }
+    branches  : branch { @$ = @1; $$ = single_Cases($1); }
+              | branches branch  { @$ = @2; $$ = append_Cases($1, single_Cases($2)); }
     ;
 
-    branch  : 
-            OBJECTID ':' TYPEID DARROW expression ';'
-            {
-              @$ = @6;
-              $$ = branch($1, $3, $5);
-            }
+    branch  : OBJECTID ':' TYPEID DARROW expression ';' { @$ = @6; $$ = branch($1, $3, $5); }
     ;
 
-    arguments_expressions : 
-                          ',' expression 
-                          {
-                            @$ = @1;
-                            $$ = single_Expressions($2);
-                          }
-                          | arguments_expressions ',' expression
-                          {
-                            @$ = @3;
-                            $$ = append_Expressions($1, single_Expressions($3));
-                          }
+    arguments_expressions : ',' expression  { @$ = @1; $$ = single_Expressions($2); }
+                          | arguments_expressions ',' expression { @$ = @3; $$ = append_Expressions($1, single_Expressions($3)); }
     ;
 
-    let_expression  : 
-                    OBJECTID ':' TYPEID let_assign IN expression 
-                    {
-                      @$ = @6;
-                      $$ = let($1, $3, $4, $6);
-                    }
-                    | OBJECTID ':' TYPEID let_assign ',' let_expression
-                    {      
-                      @$ = @6;
-                      $$ = let($1, $3, $4, $6);
-                    }
+    let_expression  : OBJECTID ':' TYPEID let_assign IN expression { @$ = @6; $$ = let($1, $3, $4, $6); }
+                    | OBJECTID ':' TYPEID let_assign ',' let_expression { @$ = @6; $$ = let($1, $3, $4, $6); }
                     | error ',' { yyerrok; }
     ;
 
-    let_assign  :
-                {
-                  $$ = no_expr();
-                }
-                | ASSIGN expression 
-                {
-                  @$ = @2;
-                  $$ = $2;
-                }
+    let_assign  : { $$ = no_expr(); }
+                | ASSIGN expression  { @$ = @2; $$ = $2; }
     ;
 
-    dispatch_expression : 
-                        OBJECTID '(' ')'
-                        {
-                          @$ = @3;
-                          $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions());
-                        }
-                        | OBJECTID '(' expression ')'
-                        {
-                          @$ = @3;
-                          $$ = dispatch(object(idtable.add_string("self")), $1, single_Expressions($3));
-                        }
+    dispatch_expression : OBJECTID '(' ')' { @$ = @3; $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions()); }
+                        | OBJECTID '(' expression ')' { @$ = @3; $$ = dispatch(object(idtable.add_string("self")), $1, single_Expressions($3)); }
                         | OBJECTID '(' expression arguments_expressions  ')'
-                        {
-                          @$ = @3;
-                          $$ = dispatch(object(idtable.add_string("self")), $1, append_Expressions(single_Expressions($3), $4));
-                        }
-                        | expression '.' OBJECTID '(' ')'
-                        { 
-                          @$ = @5;
-                          $$ = dispatch($1, $3, nil_Expressions());
-                        }
-                        | expression '.' OBJECTID '(' expression ')'
-                        {
-                          @$ = @6;
-                          $$ = dispatch($1, $3, single_Expressions($5));
-                        }
+                        { @$ = @3; $$ = dispatch(object(idtable.add_string("self")), $1, append_Expressions(single_Expressions($3), $4)); }
+                        | expression '.' OBJECTID '(' ')' { @$ = @5; $$ = dispatch($1, $3, nil_Expressions()); }
+                        | expression '.' OBJECTID '(' expression ')' { @$ = @6; $$ = dispatch($1, $3, single_Expressions($5)); }
                         | expression '.' OBJECTID '(' expression arguments_expressions ')'
-                        {
-                          @$ = @7;
-                          $$ = dispatch($1, $3, append_Expressions(single_Expressions($5), $6));
-                        }
-                        | expression '@' TYPEID '.' OBJECTID '(' ')'
-                        {
-                          @$ = @7;
-                          $$ = static_dispatch($1, $3, $5, nil_Expressions());
-                        }
+                        { @$ = @7; $$ = dispatch($1, $3, append_Expressions(single_Expressions($5), $6)); }
+                        | expression '@' TYPEID '.' OBJECTID '(' ')' { @$ = @7; $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
                         | expression '@' TYPEID '.' OBJECTID '(' expression ')'
-                        {
-                          @$ = @8;
-                          $$ = static_dispatch($1, $3, $5, single_Expressions($7));
-                        }
+                        { @$ = @8; $$ = static_dispatch($1, $3, $5, single_Expressions($7)); }
                         | expression '@' TYPEID '.' OBJECTID '(' expression arguments_expressions ')'
-                        {
-                          @$ = @9;
-                          $$ = static_dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8));
-                        }
+                        { @$ = @9; $$ = static_dispatch($1, $3, $5, append_Expressions(single_Expressions($7), $8)); }
     ;
 
     /* end of grammar */
