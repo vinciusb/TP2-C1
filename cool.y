@@ -135,8 +135,8 @@
     program	: class_list {  @$ = @1;  ast_root = program($1);  }
     ;
     
-    class_list  :  class { @$ = @1; $$ = single_Classes($1); }
-                |  class_list class { @$ = @2; $$ = append_Classes($1,single_Classes($2)); }
+    class_list  :  class { @$ = @1; $$ = single_Classes($1); } /* CLASSE UNICA */
+                |  class_list class { @$ = @2; $$ = append_Classes($1,single_Classes($2)); } /* MULTIPLAS CLASSES */
     ;
     
     class : CLASS TYPEID '{' features '}' ';'
@@ -146,7 +146,7 @@
           | error ';' {  }
     ;
     
-    features  : { $$ = nil_Features(); }
+    features  : { $$ = nil_Features(); } /* NAO PODE TER FEATURE VAZIA */
               | feature  { @$ = @1;  $$ = single_Features($1); }
               | features feature  { @$ = @2;  $$ = append_Features($1, single_Features($2)); }
     ;
@@ -156,6 +156,7 @@
             | error ';' {  }
     ;
 
+    /* DECLARACOES */
     method_declaration  :  OBJECTID '(' formals ')' ':' TYPEID '{' expression '}' { @$ = @9; $$ = method($1, $3, $6, $8); }
                         ;
     
@@ -257,5 +258,3 @@
       
       if(omerrs>50) {fprintf(stdout, "More than 50 errors\n"); exit(1);}
     }
-    
-    
